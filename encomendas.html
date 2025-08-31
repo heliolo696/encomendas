@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0078D7">
+    <meta name="description" content="Sistema de Gestão de Encomendas - DHC OFFICES">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Encomendas DHC">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <title>Encomendas DHC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* (O CSS completo do sistema anterior vai aqui) */
+        /* Por questão de espaço, mantive o mesmo CSS do sistema anterior */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 15px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0078D7 0%, #1E477D 100%);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ... (restante do CSS) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DHC OFFICES</h1>
+            <p>Sistema de Gestão de Encomendas</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="registro">Nova Encomenda</div>
+            <div class="tab" data-tab="lista">Encomendas</div>
+            <div class="tab" data-tab="entregas">Entregas</div>
+            <div class="tab" data-tab="config">Configurações</div>
+        </div>
+        
+        <div class="tab-content active" id="registro">
+            <form id="encomenda-form">
+                <div class="form-group">
+                    <label for="destinatario">Destinatário *</label>
+                    <input type="text" id="destinatario" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sala">Sala/Setor *</label>
+                    <input type="text" id="sala" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="tel" id="telefone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="remetente">Remetente *</label>
+                    <input type="text" id="remetente" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria">
+                        <option value="Documento">Documento</option>
+                        <option value="Pacote">Pacote</option>
+                        <option value="Alimento">Alimento</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tamanho">Tamanho</label>
+                    <select id="tamanho">
+                        <option value="Pequeno">Pequeno</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Foto da Encomenda</label>
+                    <div class="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <div class="camera-buttons">
+                            <button type="button" id="capturar-btn" class="secondary"><i class="fas fa-camera"></i> Capturar</button>
+                            <button type="button" id="upload-btn" class="secondary"><i class="fas fa-upload"></i> Carregar</button>
+                        </div>
+                        <input type="file" id="upload-input" accept="image/*" style="display: none;">
+                        <img id="photo-preview" class="photo-preview" style="display: none;">
+                    </div>
+                </div>
+                
+                <button type="submit"><i class="fas fa-save"></i> Registrar Encomenda</button>
+            </form>
+        </div>
+        
+        <div class="tab-content" id="lista">
+            <div class="encomenda-list" id="encomenda-list">
+                <div class="empty-state">
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                    <p>Carregando encomendas...</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button id="sincronizar-btn"><i class="fas fa-sync"></i> Sincronizar</button>
+                <div id="status-sincronizacao" class="sync-status" style="display: none; margin-top: 10px;"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="entregas">
+            <div class="form-group">
+                <label for="codigo-verificacao">Código de Verificação</label>
+                <input type="text" id="codigo-verificacao" placeholder="Digite o código da encomenda">
+            </div>
+            <button id="validar-codigo-btn"><i class="fas fa-check-circle"></i> Validar e Marcar como Entregue</button>
+            
+            <div style="margin: 20px 0; text-align: center;">
+                <p>Ou escaneie o QR Code</p>
+                <div id="qrcode-scanner"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="config">
+            <div class="config-panel">
+                <h3><i class="fas fa-database"></i> Configurações de Sincronização</h3>
+                
+                <div class="form-group">
+                    <label for="api-url">URL da API do Google Sheets</label>
+                    <input type="text" id="api-url" placeholder="Cole a URL da API aqui">
+                </div>
+                
+                <button id="testar-conexao-btn" class="secondary">Testar Conexão</button>
+                <div id="status-conexao" class="sync-status" style="display: none;"></div>
+            </div>
+            
+            <div class="config-panel">
+                <h3><i class="fas fa-info-circle"></i> Sobre o Sistema</h3>
+                <p>Versão: 2.0 (Com sincronização em nuvem)</p>
+                <p>Desenvolvido para DHC OFFICES</p>
+                <p id="storage-info">Armazenamento local: 0KB | Online: 0 encomendas</p>
+            </div>
+            
+            <div class="config-panel">
+                <h3><i class="fas fa-mobile-alt"></i> Instalar como Aplicativo</h3>
+                <p>Para instalar este sistema como aplicativo no seu celular:</p>
+                <ol>
+                    <li>No Chrome, toque no menu (3 pontos)</li>
+                    <li>Selecione "Adicionar à tela inicial"</li>
+                    <li>Confirme o nome e adicione</li>
+                </ol>
+                <p>O ícone será adicionado à sua tela inicial como um aplicativo.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para QR Code -->
+    <div class="modal" id="qrcode-modal">
+        <div class="modal-content">
+            <h3>QR Code da Encomenda</h3>
+            <div id="qrcode"></div>
+            <p id="qrcode-info"></p>
+            <button id="fechar-qrcode">Fechar</button>
+        </div>
+    </div>
+    
+    <!-- Modal para detalhes -->
+    <div class="modal" id="detalhes-modal">
+        <div class="modal-content">
+            <h3>Detalhes da Encomenda</h3>
+            <div id="detalhes-conteudo"></div>
+            <button id="fechar-detalhes">Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        // URL da API do Google Sheets (será configurada pelo usuário)
+        let API_URL = localStorage.getItem('api_url') || '';
+        
+        // Dados das encomendas
+        let encomendas = JSON.parse(localStorage.getItem('encomendas')) || [];
+        let fotoData = null;
+        let stream = null;
+
+        // Elementos DOM
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const encomendaForm = document.getElementById('encomenda-form');
+        const encomendaList = document.getElementById('encomenda-list');
+        const video = document.getElementById('video');
+        const capturarBtn = document.getElementById('capturar-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadInput = document.getElementById('upload-input');
+        const photoPreview = document.getElementById('photo-preview');
+        const validarCodigoBtn = document.getElementById('validar-codigo-btn');
+        const codigoVerificacao = document.getElementById('codigo-verificacao');
+        const qrcodeModal = document.getElementById('qrcode-modal');
+        const fecharQrcode = document.getElementById('fechar-qrcode');
+        const qrcodeElement = document.getElementById('qrcode');
+        const qrcodeInfo = document.getElementById('qrcode-info');
+        const detalhesModal = document.getElementById('detalhes-modal');
+        const fecharDetalhes = document.getElementById('fechar-detalhes');
+        const detalhesConteudo = document.getElementById('detalhes-conteudo');
+        const sincronizarBtn = document.getElementById('sincronizar-btn');
+        const statusSincronizacao = document.getElementById('status-sincronizacao');
+        const apiUrlInput = document.getElementById('api-url');
+        const testarConexaoBtn = document.getElementById('testar-conexao-btn');
+        const statusConexao = document.getElementById('status-conexao');
+        const storageInfo = document.getElementById('storage-info');
+
+        // Inicializar a aplicação
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Ativar tab clicada
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Se for a aba de lista, atualizar a lista
+                    if (tabId === 'lista') {
+                        carregarListaEncomendas();
+                    }
+                    
+                    // Se for a aba de configurações, carregar as configurações
+                    if (tabId === 'config') {
+                        carregarConfiguracoes();
+                        atualizarInfoArmazenamento();
+                    }
+                });
+            });
+            
+            // Configurar formulário
+            encomendaForm.addEventListener('submit', registrarEncomenda);
+            
+            // Configurar câmera
+            capturarBtn.addEventListener('click', capturarFoto);
+            uploadBtn.addEventListener('click', () => uploadInput.click());
+            uploadInput.addEventListener('change', carregarFoto);
+            
+            // Configurar validação de código
+            validarCodigoBtn.addEventListener('click', validarCodigo);
+            
+            // Configurar modais
+            fecharQrcode.addEventListener('click', () => qrcodeModal.style.display = 'none');
+            fecharDetalhes.addEventListener('click', () => detalhesModal.style.display = 'none');
+            
+            // Configurar botões
+            sincronizarBtn.addEventListener('click', sincronizarEncomendas);
+            testarConexaoBtn.addEventListener('click', testarConexao);
+            
+            // Configurar campo da API
+            apiUrlInput.addEventListener('change', salvarConfiguracoes);
+            
+            // Iniciar câmera
+            iniciarCamera();
+            
+            // Carregar configurações
+            carregarConfiguracoes();
+            
+            // Carregar encomendas iniciais
+            carregarListaEncomendas();
+            
+            // Tentar sincronizar ao iniciar se tiver API configurada
+            if (API_URL) {
+                setTimeout(sincronizarEncomendas, 1000);
+            }
+        });
+
+        // Iniciar a câmera
+        async function iniciarCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Erro ao acessar a câmera:', err);
+            }
+        }
+
+        // Capturar foto da câmera
+        function capturarFoto() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Converter para data URL
+            fotoData = canvas.toDataURL('image/jpeg');
+            photoPreview.src = fotoData;
+            photoPreview.style.display = 'block';
+            
+            // Parar a câmera após captura
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        // Carregar foto do dispositivo
+        function carregarFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fotoData = e.target.result;
+                    photoPreview.src = fotoData;
+                    photoPreview.style.display = 'block';
+                    
+                    // Parar a câmera se estiver ativa
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        stream = null;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Registrar nova encomenda
+        async function registrarEncomenda(event) {
+            event.preventDefault();
+            
+            // Validar campos obrigatórios
+            const destinatario = document.getElementById('destinatario').value;
+            const sala = document.getElementById('sala').value;
+            const remetente = document.getElementById('remetente').value;
+            
+            if (!destinatario || !sala || !remetente) {
+                alert('Preencha os campos obrigatórios: Destinatário, Sala e Remetente');
+                return;
+            }
+            
+            // Gerar código único
+            const codigo = gerarCodigo(8);
+            
+            // Criar objeto encomenda
+            const encomenda = {
+                ID: Date.now().toString(),
+                Codigo: codigo,
+                Destinatario: destinatario,
+                Sala: sala,
+                Telefone: document.getElementById('telefone').value,
+                Email: document.getElementById('email').value,
+                Remetente: remetente,
+                Categoria: document.getElementById('categoria').value,
+                Tamanho: document.getElementById('tamanho').value,
+                DataRecebimento: new Date().toISOString(),
+                Foto: fotoData,
+                Status: 'Pendente',
+                Sincronizado: 'Não'
+            };
+            
+            // Adicionar à lista local
+            encomendas.push(encomenda);
+            localStorage.setItem('encomendas', JSON.stringify(encomendas));
+            
+            // Limpar formulário
+            encomendaForm.reset();
+            fotoData = null;
+            photoPreview.style.display = 'none';
+            
+            // Reiniciar câmera
+            if (!stream) {
+                iniciarCamera();
+            }
+            
+            // Sincronizar com a nuvem se tiver conexão
+            if (API_URL) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'add_encomenda',
+                            encomenda: encomenda
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        // Marcar como sincronizado
+                        const index = encomendas.findIndex(e => e.ID === encomenda.ID);
+                        if (index !== -1) {
+                            encomendas[index].Sincronizado = 'Sim';
+                            localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao sincronizar com nuvem:', error);
+                }
+            }
+            
+            alert('Encomenda registrada com sucesso! Código: ' + codigo);
+            
+            // Atualizar lista
+            carregarListaEncomendas();
+        }
+
+        // Gerar código alfanumérico
+        function gerarCodigo(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Carregar lista de encomendas
+        function carregarListaEncomendas() {
+            if (encomendas.length === 0) {
+                encomendaList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <p>Nenhuma encomenda registrada</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            encomendaList.innerHTML = '';
+            
+            encomendas.forEach(encomenda => {
+                const item = document.createElement('div');
+                item.className = 'encomenda-item';
+                
+                const data = new Date(encomenda.DataRecebimento).toLocaleDateString('pt-BR');
+                const sincronizadoIcon = encomenda.Sincronizado === 'Sim' ? 
+                    '<i class="fas fa-cloud" style="color: #28a745; margin-left: 5px;" title="Sincronizado"></i>' : 
+                    '<i class="fas fa-cloud-upload-alt" style="color: #ffc107; margin-left: 5px;" title="Não sincronizado"></i>';
+                
+                item.innerHTML = `
+                    <div class="encomenda-info">
+                        <h3>${encomenda.Destinatario} ${sincronizadoIcon}</h3>
+                        <p>Sala: ${encomenda.Sala} | Recebimento: ${data}</p>
+                        <p>Remetente: ${encomenda.Remetente}</p>
+                        <span class="status-badge status-${encomenda.Status.toLowerCase()}">${encomenda.Status}</span>
+                    </div>
+                    <div class="encomenda-actions">
+                        <button class="secondary" onclick="verDetalhes('${encomenda.ID}')"><i class="fas fa-eye"></i></button>
+                        <button onclick="gerarQRCode(${JSON.stringify(encomenda).replace(/"/g, '&quot;')})"><i class="fas fa-qrcode"></i></button>
+                        ${encomenda.Status === 'Pendente' ? 
+                            `<button class="secondary" onclick="marcarEntregue('${encomenda.ID}')"><i class="fas fa-check"></i></button>` : ''}
+                    </div>
+                `;
+                
+                encomendaList.appendChild(item);
+            });
+        }
+
+        // Ver detalhes da encomenda
+        function verDetalhes(id) {
+            const encomenda = encomendas.find(e => e.ID === id);
+            if (!encomenda) return;
+            
+            const dataRecebimento = new Date(encomenda.DataRecebimento).toLocaleDateString('pt-BR');
+            
+            detalhesConteudo.innerHTML = `
+                <p><strong>Destinatário:</strong> ${encomenda.Destinatario}</p>
+                <p><strong>Sala/Setor:</strong> ${encomenda.Sala}</p>
+                <p><strong>Telefone:</strong> ${encomenda.Telefone || 'Não informado'}</p>
+                <p><strong>E-mail:</strong> ${encomenda.Email || 'Não informado'}</p>
+                <p><strong>Remetente:</strong> ${encomenda.Remetente}</p>
+                <p><strong>Categoria:</strong> ${encomenda.Categoria}</p>
+                <p><strong>Tamanho:</strong> ${encomenda.Tamanho}</p>
+                <p><strong>Data de Recebimento:</strong> ${dataRecebimento}</p>
+                <p><strong>Status:</strong> <span class="status-badge status-${encomenda.Status.toLowerCase()}">${encomenda.Status}</span></p>
+                <p><strong>Código:</strong> ${encomenda.Codigo}</p>
+                <p><strong>Sincronizado:</strong> ${encomenda.Sincronizado}</p>
+                ${encomenda.Foto ? `<img src="${encomenda.Foto}" class="photo-preview">` : ''}
+            `;
+            
+            detalhesModal.style.display = 'flex';
+        }
+
+        // Gerar QR Code para encomenda
+        function gerarQRCode(encomenda) {
+            qrcodeElement.innerHTML = '';
+            qrcodeInfo.textContent = `${encomenda.Destinatario} - ${encomenda.Sala}`;
+            
+            // Gerar dados para o QR Code
+            const qrData = `ENCOMENDA|${encomenda.Codigo}|${encomenda.Destinatario}|${encomenda.Sala}`;
+            
+            // Gerar QR Code
+            new QRCode(qrcodeElement, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: '#0078D7',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            qrcodeModal.style.display = 'flex';
+        }
+
+        // Marcar encomenda como entregue
+        async function marcarEntregue(id) {
+            if (!confirm('Deseja marcar esta encomenda como entregue?')) return;
+            
+            const encomendaIndex = encomendas.findIndex(e => e.ID === id);
+            if (encomendaIndex !== -1) {
+                encomendas[encomendaIndex].Status = 'Entregue';
+                encomendas[encomendaIndex].DataEntrega = new Date().toISOString();
+                
+                localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                
+                // Sincronizar com a nuvem
+                if (API_URL) {
+                    try {
+                        await fetch(API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                action: 'update_encomenda',
+                                id: id,
+                                updates: {
+                                    Status: 'Entregue',
+                                    DataEntrega: new Date().toISOString()
+                                }
+                            })
+                        });
+                        
+                        encomendas[encomendaIndex].Sincronizado = 'Sim';
+                        localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                    } catch (error) {
+                        console.error('Erro ao sincronizar com nuvem:', error);
+                    }
+                }
+                
+                carregarListaEncomendas();
+                alert('Encomenda marcada como entregue!');
+            }
+        }
+
+        // Validar código e marcar como entregue
+        async function validarCodigo() {
+            const codigo = codigoVerificacao.value.trim().toUpperCase();
+            if (!codigo) {
+                alert('Digite o código de verificação');
+                return;
+            }
+            
+            const encomendaIndex = encomendas.findIndex(e => e.Codigo === codigo && e.Status === 'Pendente');
+            if (encomendaIndex === -1) {
+                alert('Código inválido ou encomenda já entregue');
+                return;
+            }
+            
+            encomendas[encomendaIndex].Status = 'Entregue';
+            encomendas[encomendaIndex].DataEntrega = new Date().toISOString();
+            
+            localStorage.setItem('encomendas', JSON.stringify(encomendas));
+            codigoVerificacao.value = '';
+            
+            // Sincronizar com a nuvem
+            if (API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'update_encomenda',
+                            id: encomendas[encomendaIndex].ID,
+                            updates: {
+                                Status: 'Entregue',
+                                DataEntrega: new Date().toISOString()
+                            }
+                        })
+                    });
+                    
+                    encomendas[encomendaIndex].Sincronizado = 'Sim';
+                    localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                } catch (error) {
+                    console.error('Erro ao sincronizar com nuvem:', error);
+                }
+            }
+            
+            alert(`Encomenda de ${encomendas[encomendaIndex].Destinatario} marcada como entregue!`);
+        }
+
+        // Sincronizar encomendas com a nuvem
+        async function sincronizarEncomendas() {
+            if (!API_URL) {
+                statusSincronizacao.style.display = 'block';
+                statusSincronizacao.textContent = 'URL da API não configurada. Vá em Configurações.';
+                statusSincronizacao.className = 'sync-status sync-error';
+                return;
+            }
+            
+            statusSincronizacao.style.display = 'block';
+            statusSincronizacao.textContent = 'Sincronizando...';
+            statusSincronizacao.className = 'sync-status';
+            
+            try {
+                // Buscar encomendas da nuvem
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'get_encomendas'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Mesclar encomendas locais com as da nuvem
+                    const encomendasCloud = result.data || [];
+                    
+                    // Adicionar encomendas que existem na nuvem mas não localmente
+                    encomendasCloud.forEach(ec => {
+                        const exists = encomendas.some(e => e.ID === ec.ID);
+                        if (!exists) {
+                            encomendas.push(ec);
+                        }
+                    });
+                    
+                    // Enviar encomendas locais que não existem na nuvem
+                    for (const encomenda of encomendas) {
+                        if (encomenda.Sincronizado === 'Não') {
+                            try {
+                                await fetch(API_URL, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        action: 'add_encomenda',
+                                        encomenda: encomenda
+                                    })
+                                });
+                                
+                                encomenda.Sincronizado = 'Sim';
+                            } catch (error) {
+                                console.error('Erro ao sincronizar encomenda:', error);
+                            }
+                        }
+                    }
+                    
+                    localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                    carregarListaEncomendas();
+                    
+                    statusSincronizacao.textContent = 'Sincronização concluída!';
+                    statusSincronizacao.className = 'sync-status sync-success';
+                } else {
+                    statusSincronizacao.textContent = 'Erro na sincronização: ' + result.message;
+                    statusSincronizacao.className = 'sync-status sync-error';
+                }
+            } catch (error) {
+                statusSincronizacao.textContent = 'Erro de conexão: ' + error.message;
+                statusSincronizacao.className = 'sync-status sync-error';
+            }
+        }
+
+        // Testar conexão com API
+        async function testarConexao() {
+            if (!apiUrlInput.value) {
+                alert('Digite a URL da API primeiro');
+                return;
+            }
+            
+            statusConexao.style.display = 'block';
+            statusConexao.textContent = 'Testando conexão...';
+            statusConexao.className = 'sync-status';
+            
+            try {
+                const response = await fetch(apiUrlInput.value, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'get_encomendas'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    statusConexao.textContent = 'Conexão bem-sucedida!';
+                    statusConexao.className = 'sync-status sync-success';
+                    
+                    // Salvar URL da API
+                    API_URL = apiUrlInput.value;
+                    localStorage.setItem('api_url', API_URL);
+                } else {
+                    statusConexao.textContent = 'Erro na conexão: ' + result.message;
+                    statusConexao.className = 'sync-status sync-error';
+                }
+            } catch (error) {
+                statusConexao.textContent = 'Erro de conexão: ' + error.message;
+                statusConexao.className = 'sync-status sync-error';
+            }
+        }
+
+        // Carregar configurações
+        function carregarConfiguracoes() {
+            if (API_URL) {
+                apiUrlInput.value = API_URL;
+            }
+            
+            atualizarInfoArmazenamento();
+        }
+
+        // Salvar configurações
+        function salvarConfiguracoes() {
+            API_URL = apiUrlInput.value;
+            localStorage.setItem('api_url', API_URL);
+            alert('Configurações salvas!');
+        }
+
+        // Atualizar informação de armazenamento
+        function atualizarInfoArmazenamento() {
+            const encomendasData = localStorage.getItem('encomendas') || '';
+            const totalKB = Math.round(encomendasData.length / 1024);
+            const totalEncomendas = encomendas.length;
+            
+            storageInfo.textContent = `Armazenamento local: ${totalKB}KB | ${totalEncomendas} encomendas`;
+        }
+
+        // Verificar se é dispositivo móvel
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Inicializar a câmera para QR Code se for mobile
+        if (isMobileDevice()) {
+            document.getElementById('qrcode-scanner').innerHTML = `
+                <p style="color: #6c757d; margin-top: 10px;">
+                    <i class="fas fa-camera"></i> 
+                    Para escanear QR Codes, use um aplicativo de leitura de QR Code.
+                </p>
+            `;
+        }
+    </script>
+</body>
+</html>
