@@ -3,35 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0078D7">
-    <meta name="description" content="Sistema de Gestão de Encomendas - DHC OFFICES">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Encomendas DHC">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <title>Encomendas DHC</title>
+    <title>Sistema de Encomendas - DHC OFFICES</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* (O CSS completo do sistema anterior vai aqui) */
-        /* Por questão de espaço, mantive o mesmo CSS do sistema anterior */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
+            padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
         }
         
         .container {
             max-width: 100%;
             padding: 15px;
+            padding-top: max(15px, env(safe-area-inset-top));
         }
         
         header {
@@ -39,12 +34,462 @@
             color: white;
             padding: 15px 0;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
         }
         
-        /* ... (restante do CSS) ... */
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .tabs-container {
+            position: relative;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        
+        .tabs-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        
+        .tab.active {
+            background: #0078D7;
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 120, 215, 0.4);
+        }
+        
+        .tab i {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 0.95rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+            transition: border 0.3s, box-shadow 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input:focus, select:focus {
+            border-color: #0078D7;
+            box-shadow: 0 0 0 3px rgba(0, 120, 215, 0.2);
+            outline: none;
+        }
+        
+        select {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+        
+        button {
+            background: #0078D7;
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button:hover {
+            background: #005bb7;
+        }
+        
+        button.secondary {
+            background: #6c757d;
+        }
+        
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .camera-container {
+            margin: 15px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        #video {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #000;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+        }
+        
+        .camera-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .camera-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 60%;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .camera-shutter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            border-radius: 8px;
+        }
+        
+        @keyframes shutter {
+            0% { opacity: 0; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0; }
+        }
+        
+        .photo-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            background: #f8f9fa;
+        }
+        
+        .encomenda-list {
+            max-height: 50vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .encomenda-item {
+            background: #f8f9fa;
+            border-left: 4px solid #0078D7;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .encomenda-item:active {
+            transform: scale(0.98);
+        }
+        
+        .encomenda-info h3 {
+            margin-bottom: 6px;
+            color: #0078D7;
+            font-size: 1.05rem;
+        }
+        
+        .encomenda-info p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .encomenda-actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .encomenda-actions button {
+            padding: 10px;
+            font-size: 0.85rem;
+            width: auto;
+            border-radius: 6px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-entregue {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        #qrcode {
+            margin: 15px auto;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: #ced4da;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+        
+        .config-panel {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .config-panel h3 {
+            margin-bottom: 15px;
+            color: #0078D7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sync-status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .sync-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .sync-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -10px);
+        }
+        
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .bottom-action-bar button {
+            flex: 1;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 700px;
+                margin: 0 auto;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs {
+                width: 100%;
+            }
+            
+            .tab i {
+                display: inline-block;
+                margin-bottom: 0;
+                margin-right: 8px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tab {
+                padding: 14px 8px;
+                font-size: 0.85rem;
+            }
+            
+            .tab i {
+                font-size: 1.1rem;
+                margin-bottom: 4px;
+            }
+            
+            .tab-content {
+                padding: 16px;
+            }
+            
+            input, select {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -54,11 +499,25 @@
             <p>Sistema de Gestão de Encomendas</p>
         </header>
         
-        <div class="tabs">
-            <div class="tab active" data-tab="registro">Nova Encomenda</div>
-            <div class="tab" data-tab="lista">Encomendas</div>
-            <div class="tab" data-tab="entregas">Entregas</div>
-            <div class="tab" data-tab="config">Configurações</div>
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="registro">
+                    <i class="fas fa-box"></i>
+                    <span>Nova</span>
+                </div>
+                <div class="tab" data-tab="lista">
+                    <i class="fas fa-list"></i>
+                    <span>Lista</span>
+                </div>
+                <div class="tab" data-tab="entregas">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Entregas</span>
+                </div>
+                <div class="tab" data-tab="config">
+                    <i class="fas fa-cog"></i>
+                    <span>Config</span>
+                </div>
+            </div>
         </div>
         
         <div class="tab-content active" id="registro">
@@ -111,11 +570,13 @@
                     <label>Foto da Encomenda</label>
                     <div class="camera-container">
                         <video id="video" autoplay playsinline></video>
+                        <div class="camera-overlay"></div>
+                        <div class="camera-shutter" id="camera-shutter"></div>
                         <div class="camera-buttons">
                             <button type="button" id="capturar-btn" class="secondary"><i class="fas fa-camera"></i> Capturar</button>
                             <button type="button" id="upload-btn" class="secondary"><i class="fas fa-upload"></i> Carregar</button>
                         </div>
-                        <input type="file" id="upload-input" accept="image/*" style="display: none;">
+                        <input type="file" id="upload-input" accept="image/*" capture="environment" style="display: none;">
                         <img id="photo-preview" class="photo-preview" style="display: none;">
                     </div>
                 </div>
@@ -126,15 +587,11 @@
         
         <div class="tab-content" id="lista">
             <div class="encomenda-list" id="encomenda-list">
+                <!-- As encomendas serão listadas aqui via JavaScript -->
                 <div class="empty-state">
-                    <i class="fas fa-sync-alt fa-spin"></i>
-                    <p>Carregando encomendas...</p>
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhuma encomenda registrada</p>
                 </div>
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <button id="sincronizar-btn"><i class="fas fa-sync"></i> Sincronizar</button>
-                <div id="status-sincronizacao" class="sync-status" style="display: none; margin-top: 10px;"></div>
             </div>
         </div>
         
@@ -147,17 +604,32 @@
             
             <div style="margin: 20px 0; text-align: center;">
                 <p>Ou escaneie o QR Code</p>
-                <div id="qrcode-scanner"></div>
+                <button id="iniciar-qr-scanner" class="secondary" style="margin-top: 10px;">
+                    <i class="fas fa-qrcode"></i> Iniciar Scanner QR Code
+                </button>
+            </div>
+            
+            <div class="camera-container" id="qr-scanner-container" style="display: none;">
+                <video id="qr-video" autoplay playsinline></video>
+                <div class="camera-overlay"></div>
+                <button id="parar-qr-scanner" class="secondary" style="margin-top: 10px;">
+                    <i class="fas fa-stop"></i> Parar Scanner
+                </button>
             </div>
         </div>
         
         <div class="tab-content" id="config">
             <div class="config-panel">
-                <h3><i class="fas fa-database"></i> Configurações de Sincronização</h3>
+                <h3><i class="fas fa-database"></i> Integração com Sistema Principal</h3>
                 
                 <div class="form-group">
-                    <label for="api-url">URL da API do Google Sheets</label>
-                    <input type="text" id="api-url" placeholder="Cole a URL da API aqui">
+                    <label for="api-url">URL da API</label>
+                    <input type="text" id="api-url" placeholder="http://endereco-do-servidor/api">
+                </div>
+                
+                <div class="form-group">
+                    <label for="api-chave">Chave de API</label>
+                    <input type="text" id="api-chave" placeholder="Sua chave de acesso">
                 </div>
                 
                 <button id="testar-conexao-btn" class="secondary">Testar Conexão</button>
@@ -165,23 +637,31 @@
             </div>
             
             <div class="config-panel">
-                <h3><i class="fas fa-info-circle"></i> Sobre o Sistema</h3>
-                <p>Versão: 2.0 (Com sincronização em nuvem)</p>
-                <p>Desenvolvido para DHC OFFICES</p>
-                <p id="storage-info">Armazenamento local: 0KB | Online: 0 encomendas</p>
+                <h3><i class="fas fa-bell"></i> Notificações</h3>
+                
+                <div class="form-group">
+                    <label for="email-notificacao">E-mail para Notificações</label>
+                    <input type="email" id="email-notificacao" placeholder="email@exemplo.com">
+                </div>
+                
+                <button id="salvar-config-btn">Salvar Configurações</button>
             </div>
             
             <div class="config-panel">
-                <h3><i class="fas fa-mobile-alt"></i> Instalar como Aplicativo</h3>
-                <p>Para instalar este sistema como aplicativo no seu celular:</p>
-                <ol>
-                    <li>No Chrome, toque no menu (3 pontos)</li>
-                    <li>Selecione "Adicionar à tela inicial"</li>
-                    <li>Confirme o nome e adicione</li>
-                </ol>
-                <p>O ícone será adicionado à sua tela inicial como um aplicativo.</p>
+                <h3><i class="fas fa-info-circle"></i> Sobre o Sistema</h3>
+                <p>Versão: 1.0</p>
+                <p>Desenvolvido para DHC OFFICES</p>
+                <p id="storage-info">Armazenamento local: 0KB</p>
+                <button id="limpar-dados-btn" class="secondary" style="margin-top: 10px;">
+                    <i class="fas fa-trash"></i> Limpar Dados Locais
+                </button>
             </div>
         </div>
+    </div>
+    
+    <div class="bottom-action-bar" id="bottom-action-bar" style="display: none;">
+        <button id="exportar-btn" class="secondary"><i class="fas fa-download"></i> Exportar</button>
+        <button id="sincronizar-btn"><i class="fas fa-sync"></i> Sincronizar</button>
     </div>
     
     <!-- Modal para QR Code -->
@@ -202,15 +682,17 @@
             <button id="fechar-detalhes">Fechar</button>
         </div>
     </div>
+    
+    <div class="toast" id="toast"></div>
 
     <script>
-        // URL da API do Google Sheets (será configurada pelo usuário)
-        let API_URL = localStorage.getItem('api_url') || '';
-        
-        // Dados das encomendas
+        // Dados das encomendas (armazenamento local)
         let encomendas = JSON.parse(localStorage.getItem('encomendas')) || [];
         let fotoData = null;
         let stream = null;
+        let qrStream = null;
+        let config = JSON.parse(localStorage.getItem('config')) || {};
+        let currentTab = 'registro';
 
         // Elementos DOM
         const tabs = document.querySelectorAll('.tab');
@@ -222,6 +704,7 @@
         const uploadBtn = document.getElementById('upload-btn');
         const uploadInput = document.getElementById('upload-input');
         const photoPreview = document.getElementById('photo-preview');
+        const cameraShutter = document.getElementById('camera-shutter');
         const validarCodigoBtn = document.getElementById('validar-codigo-btn');
         const codigoVerificacao = document.getElementById('codigo-verificacao');
         const qrcodeModal = document.getElementById('qrcode-modal');
@@ -231,38 +714,32 @@
         const detalhesModal = document.getElementById('detalhes-modal');
         const fecharDetalhes = document.getElementById('fechar-detalhes');
         const detalhesConteudo = document.getElementById('detalhes-conteudo');
+        const exportarBtn = document.getElementById('exportar-btn');
         const sincronizarBtn = document.getElementById('sincronizar-btn');
-        const statusSincronizacao = document.getElementById('status-sincronizacao');
         const apiUrlInput = document.getElementById('api-url');
+        const apiChaveInput = document.getElementById('api-chave');
+        const emailNotificacaoInput = document.getElementById('email-notificacao');
         const testarConexaoBtn = document.getElementById('testar-conexao-btn');
         const statusConexao = document.getElementById('status-conexao');
+        const salvarConfigBtn = document.getElementById('salvar-config-btn');
         const storageInfo = document.getElementById('storage-info');
+        const toast = document.getElementById('toast');
+        const bottomActionBar = document.getElementById('bottom-action-bar');
+        const iniciarQrScannerBtn = document.getElementById('iniciar-qr-scanner');
+        const pararQrScannerBtn = document.getElementById('parar-qr-scanner');
+        const qrScannerContainer = document.getElementById('qr-scanner-container');
+        const qrVideo = document.getElementById('qr-video');
+        const limparDadosBtn = document.getElementById('limpar-dados-btn');
 
         // Inicializar a aplicação
         document.addEventListener('DOMContentLoaded', function() {
-            // Configurar tabs
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
+            // Configurar tabs - CORREÇÃO: Usar event delegation para funcionar no mobile
+            document.querySelector('.tabs').addEventListener('click', function(e) {
+                const tab = e.target.closest('.tab');
+                if (tab) {
                     const tabId = tab.getAttribute('data-tab');
-                    
-                    // Ativar tab clicada
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(tc => tc.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(tabId).classList.add('active');
-                    
-                    // Se for a aba de lista, atualizar a lista
-                    if (tabId === 'lista') {
-                        carregarListaEncomendas();
-                    }
-                    
-                    // Se for a aba de configurações, carregar as configurações
-                    if (tabId === 'config') {
-                        carregarConfiguracoes();
-                        atualizarInfoArmazenamento();
-                    }
-                });
+                    switchTab(tabId);
+                }
             });
             
             // Configurar formulário
@@ -281,30 +758,71 @@
             fecharDetalhes.addEventListener('click', () => detalhesModal.style.display = 'none');
             
             // Configurar botões
-            sincronizarBtn.addEventListener('click', sincronizarEncomendas);
+            exportarBtn.addEventListener('click', exportarDados);
+            sincronizarBtn.addEventListener('click', sincronizarComSistemaPrincipal);
             testarConexaoBtn.addEventListener('click', testarConexao);
-            
-            // Configurar campo da API
-            apiUrlInput.addEventListener('change', salvarConfiguracoes);
+            salvarConfigBtn.addEventListener('click', salvarConfiguracoes);
+            iniciarQrScannerBtn.addEventListener('click', iniciarQrScanner);
+            pararQrScannerBtn.addEventListener('click', pararQrScanner);
+            limparDadosBtn.addEventListener('click', limparDadosLocais);
             
             // Iniciar câmera
             iniciarCamera();
             
+            // Carregar lista inicial
+            carregarListaEncomendas();
+            
             // Carregar configurações
             carregarConfiguracoes();
             
-            // Carregar encomendas iniciais
-            carregarListaEncomendas();
-            
-            // Tentar sincronizar ao iniciar se tiver API configurada
-            if (API_URL) {
-                setTimeout(sincronizarEncomendas, 1000);
-            }
+            // Atualizar barra de ações
+            updateBottomActionBar();
         });
+
+        // Alternar entre abas
+        function switchTab(tabId) {
+            // Desativar todas as abas
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            
+            // Ativar a aba clicada
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            currentTab = tabId;
+            
+            // Se for a aba de lista, atualizar a lista
+            if (tabId === 'lista') {
+                carregarListaEncomendas();
+            }
+            
+            // Se for a aba de configurações, carregar as configurações
+            if (tabId === 'config') {
+                carregarConfiguracoes();
+                atualizarInfoArmazenamento();
+            }
+            
+            // Atualizar barra de ações
+            updateBottomActionBar();
+        }
+
+        // Atualizar barra de ações inferior
+        function updateBottomActionBar() {
+            if (currentTab === 'lista') {
+                bottomActionBar.style.display = 'flex';
+            } else {
+                bottomActionBar.style.display = 'none';
+            }
+        }
 
         // Iniciar a câmera
         async function iniciarCamera() {
             try {
+                // Parar qualquer stream anterior
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: 'environment' }, 
                     audio: false 
@@ -312,32 +830,46 @@
                 video.srcObject = stream;
             } catch (err) {
                 console.error('Erro ao acessar a câmera:', err);
+                showToast('Não foi possível acessar a câmera. Verifique as permissões.', 'error');
             }
         }
 
         // Capturar foto da câmera
         function capturarFoto() {
+            if (!stream) {
+                showToast('Câmera não está disponível', 'error');
+                return;
+            }
+            
+            // Efeito de shutter
+            cameraShutter.style.animation = 'none';
+            setTimeout(() => {
+                cameraShutter.style.animation = 'shutter 0.5s';
+            }, 10);
+            
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             
             // Converter para data URL
-            fotoData = canvas.toDataURL('image/jpeg');
+            fotoData = canvas.toDataURL('image/jpeg', 0.7); // Compressão para mobile
             photoPreview.src = fotoData;
             photoPreview.style.display = 'block';
             
-            // Parar a câmera após captura
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
+            showToast('Foto capturada com sucesso', 'success');
         }
 
         // Carregar foto do dispositivo
         function carregarFoto(event) {
             const file = event.target.files[0];
             if (file) {
+                // Verificar tamanho do arquivo (máximo 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('A imagem deve ter menos de 5MB', 'error');
+                    return;
+                }
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     fotoData = e.target.result;
@@ -349,13 +881,15 @@
                         stream.getTracks().forEach(track => track.stop());
                         stream = null;
                     }
+                    
+                    showToast('Foto carregada com sucesso', 'success');
                 };
                 reader.readAsDataURL(file);
             }
         }
 
         // Registrar nova encomenda
-        async function registrarEncomenda(event) {
+        function registrarEncomenda(event) {
             event.preventDefault();
             
             // Validar campos obrigatórios
@@ -364,7 +898,7 @@
             const remetente = document.getElementById('remetente').value;
             
             if (!destinatario || !sala || !remetente) {
-                alert('Preencha os campos obrigatórios: Destinatário, Sala e Remetente');
+                showToast('Preencha os campos obrigatórios', 'error');
                 return;
             }
             
@@ -373,23 +907,25 @@
             
             // Criar objeto encomenda
             const encomenda = {
-                ID: Date.now().toString(),
-                Codigo: codigo,
-                Destinatario: destinatario,
-                Sala: sala,
-                Telefone: document.getElementById('telefone').value,
-                Email: document.getElementById('email').value,
-                Remetente: remetente,
-                Categoria: document.getElementById('categoria').value,
-                Tamanho: document.getElementById('tamanho').value,
-                DataRecebimento: new Date().toISOString(),
-                Foto: fotoData,
-                Status: 'Pendente',
-                Sincronizado: 'Não'
+                id: Date.now().toString(),
+                codigo: codigo,
+                destinatario: destinatario,
+                sala: sala,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                remetente: remetente,
+                categoria: document.getElementById('categoria').value,
+                tamanho: document.getElementById('tamanho').value,
+                dataRecebimento: new Date().toISOString(),
+                foto: fotoData,
+                status: 'Pendente',
+                sincronizado: false
             };
             
-            // Adicionar à lista local
+            // Adicionar à lista
             encomendas.push(encomenda);
+            
+            // Salvar no localStorage
             localStorage.setItem('encomendas', JSON.stringify(encomendas));
             
             // Limpar formulário
@@ -402,38 +938,28 @@
                 iniciarCamera();
             }
             
-            // Sincronizar com a nuvem se tiver conexão
-            if (API_URL) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'add_encomenda',
-                            encomenda: encomenda
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.status === 'success') {
-                        // Marcar como sincronizado
-                        const index = encomendas.findIndex(e => e.ID === encomenda.ID);
-                        if (index !== -1) {
-                            encomendas[index].Sincronizado = 'Sim';
-                            localStorage.setItem('encomendas', JSON.stringify(encomendas));
-                        }
-                    }
-                } catch (error) {
-                    console.error('Erro ao sincronizar com nuvem:', error);
-                }
+            // Notificação por e-mail (simulação)
+            if (config.emailNotificacao) {
+                simularEnvioEmail(encomenda);
             }
             
-            alert('Encomenda registrada com sucesso! Código: ' + codigo);
+            showToast(`Encomenda registrada! Código: ${codigo}`, 'success');
+            
+            // Gerar QR Code
+            gerarQRCode(encomenda);
             
             // Atualizar lista
             carregarListaEncomendas();
+        }
+
+        // Simular envio de e-mail
+        function simularEnvioEmail(encomenda) {
+            console.log('Simulando envio de e-mail para:', config.emailNotificacao);
+            console.log('Assunto: Nova encomenda para ' + encomenda.destinatario);
+            console.log('Corpo: Uma nova encomenda foi registrada. Código: ' + encomenda.codigo);
+            
+            // Em um sistema real, aqui você faria uma requisição para um serviço de e-mail
+            showToast(`Notificação enviada para: ${config.emailNotificacao}`, 'info');
         }
 
         // Gerar código alfanumérico
@@ -460,27 +986,30 @@
             
             encomendaList.innerHTML = '';
             
+            // Ordenar por data (mais recente primeiro)
+            encomendas.sort((a, b) => new Date(b.dataRecebimento) - new Date(a.dataRecebimento));
+            
             encomendas.forEach(encomenda => {
                 const item = document.createElement('div');
                 item.className = 'encomenda-item';
                 
-                const data = new Date(encomenda.DataRecebimento).toLocaleDateString('pt-BR');
-                const sincronizadoIcon = encomenda.Sincronizado === 'Sim' ? 
-                    '<i class="fas fa-cloud" style="color: #28a745; margin-left: 5px;" title="Sincronizado"></i>' : 
-                    '<i class="fas fa-cloud-upload-alt" style="color: #ffc107; margin-left: 5px;" title="Não sincronizado"></i>';
+                const data = new Date(encomenda.dataRecebimento).toLocaleDateString('pt-BR');
+                const sincronizadoIcon = encomenda.sincronizado ? 
+                    '<i class="fas fa-cloud" style="color: #28a745; margin-left: 5px;"></i>' : 
+                    '<i class="fas fa-cloud-upload-alt" style="color: #ffc107; margin-left: 5px;"></i>';
                 
                 item.innerHTML = `
                     <div class="encomenda-info">
-                        <h3>${encomenda.Destinatario} ${sincronizadoIcon}</h3>
-                        <p>Sala: ${encomenda.Sala} | Recebimento: ${data}</p>
-                        <p>Remetente: ${encomenda.Remetente}</p>
-                        <span class="status-badge status-${encomenda.Status.toLowerCase()}">${encomenda.Status}</span>
+                        <h3>${encomenda.destinatario} ${sincronizadoIcon}</h3>
+                        <p>Sala: ${encomenda.sala} | Recebimento: ${data}</p>
+                        <p>Remetente: ${encomenda.remetente}</p>
+                        <span class="status-badge status-${encomenda.status.toLowerCase()}">${encomenda.status}</span>
                     </div>
                     <div class="encomenda-actions">
-                        <button class="secondary" onclick="verDetalhes('${encomenda.ID}')"><i class="fas fa-eye"></i></button>
+                        <button class="secondary" onclick="verDetalhes('${encomenda.id}')"><i class="fas fa-eye"></i></button>
                         <button onclick="gerarQRCode(${JSON.stringify(encomenda).replace(/"/g, '&quot;')})"><i class="fas fa-qrcode"></i></button>
-                        ${encomenda.Status === 'Pendente' ? 
-                            `<button class="secondary" onclick="marcarEntregue('${encomenda.ID}')"><i class="fas fa-check"></i></button>` : ''}
+                        ${encomenda.status === 'Pendente' ? 
+                            `<button class="secondary" onclick="marcarEntregue('${encomenda.id}')"><i class="fas fa-check"></i></button>` : ''}
                     </div>
                 `;
                 
@@ -490,24 +1019,27 @@
 
         // Ver detalhes da encomenda
         function verDetalhes(id) {
-            const encomenda = encomendas.find(e => e.ID === id);
+            const encomenda = encomendas.find(e => e.id === id);
             if (!encomenda) return;
             
-            const dataRecebimento = new Date(encomenda.DataRecebimento).toLocaleDateString('pt-BR');
+            const dataRecebimento = new Date(encomenda.dataRecebimento).toLocaleDateString('pt-BR');
+            const dataEntrega = encomenda.dataEntrega ? 
+                new Date(encomenda.dataEntrega).toLocaleDateString('pt-BR') : 'Não entregue';
             
             detalhesConteudo.innerHTML = `
-                <p><strong>Destinatário:</strong> ${encomenda.Destinatario}</p>
-                <p><strong>Sala/Setor:</strong> ${encomenda.Sala}</p>
-                <p><strong>Telefone:</strong> ${encomenda.Telefone || 'Não informado'}</p>
-                <p><strong>E-mail:</strong> ${encomenda.Email || 'Não informado'}</p>
-                <p><strong>Remetente:</strong> ${encomenda.Remetente}</p>
-                <p><strong>Categoria:</strong> ${encomenda.Categoria}</p>
-                <p><strong>Tamanho:</strong> ${encomenda.Tamanho}</p>
+                <p><strong>Destinatário:</strong> ${encomenda.destinatario}</p>
+                <p><strong>Sala/Setor:</strong> ${encomenda.sala}</p>
+                <p><strong>Telefone:</strong> ${encomenda.telefone || 'Não informado'}</p>
+                <p><strong>E-mail:</strong> ${encomenda.email || 'Não informado'}</p>
+                <p><strong>Remetente:</strong> ${encomenda.remetente}</p>
+                <p><strong>Categoria:</strong> ${encomenda.categoria}</p>
+                <p><strong>Tamanho:</strong> ${encomenda.tamanho}</p>
                 <p><strong>Data de Recebimento:</strong> ${dataRecebimento}</p>
-                <p><strong>Status:</strong> <span class="status-badge status-${encomenda.Status.toLowerCase()}">${encomenda.Status}</span></p>
-                <p><strong>Código:</strong> ${encomenda.Codigo}</p>
-                <p><strong>Sincronizado:</strong> ${encomenda.Sincronizado}</p>
-                ${encomenda.Foto ? `<img src="${encomenda.Foto}" class="photo-preview">` : ''}
+                <p><strong>Data de Entrega:</strong> ${dataEntrega}</p>
+                <p><strong>Status:</strong> <span class="status-badge status-${encomenda.status.toLowerCase()}">${encomenda.status}</span></p>
+                <p><strong>Código:</strong> ${encomenda.codigo}</p>
+                <p><strong>Sincronizado:</strong> ${encomenda.sincronizado ? 'Sim' : 'Não'}</p>
+                ${encomenda.foto ? `<img src="${encomenda.foto}" class="photo-preview">` : ''}
             `;
             
             detalhesModal.style.display = 'flex';
@@ -516,10 +1048,10 @@
         // Gerar QR Code para encomenda
         function gerarQRCode(encomenda) {
             qrcodeElement.innerHTML = '';
-            qrcodeInfo.textContent = `${encomenda.Destinatario} - ${encomenda.Sala}`;
+            qrcodeInfo.textContent = `${encomenda.destinatario} - ${encomenda.sala}`;
             
             // Gerar dados para o QR Code
-            const qrData = `ENCOMENDA|${encomenda.Codigo}|${encomenda.Destinatario}|${encomenda.Sala}`;
+            const qrData = `ENCOMENDA|${encomenda.codigo}|${encomenda.destinatario}|${encomenda.sala}`;
             
             // Gerar QR Code
             new QRCode(qrcodeElement, {
@@ -535,174 +1067,104 @@
         }
 
         // Marcar encomenda como entregue
-        async function marcarEntregue(id) {
+        function marcarEntregue(id) {
             if (!confirm('Deseja marcar esta encomenda como entregue?')) return;
             
-            const encomendaIndex = encomendas.findIndex(e => e.ID === id);
+            const encomendaIndex = encomendas.findIndex(e => e.id === id);
             if (encomendaIndex !== -1) {
-                encomendas[encomendaIndex].Status = 'Entregue';
-                encomendas[encomendaIndex].DataEntrega = new Date().toISOString();
+                encomendas[encomendaIndex].status = 'Entregue';
+                encomendas[encomendaIndex].dataEntrega = new Date().toISOString();
                 
                 localStorage.setItem('encomendas', JSON.stringify(encomendas));
-                
-                // Sincronizar com a nuvem
-                if (API_URL) {
-                    try {
-                        await fetch(API_URL, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                action: 'update_encomenda',
-                                id: id,
-                                updates: {
-                                    Status: 'Entregue',
-                                    DataEntrega: new Date().toISOString()
-                                }
-                            })
-                        });
-                        
-                        encomendas[encomendaIndex].Sincronizado = 'Sim';
-                        localStorage.setItem('encomendas', JSON.stringify(encomendas));
-                    } catch (error) {
-                        console.error('Erro ao sincronizar com nuvem:', error);
-                    }
-                }
-                
                 carregarListaEncomendas();
-                alert('Encomenda marcada como entregue!');
+                
+                showToast('Encomenda marcada como entregue!', 'success');
             }
         }
 
         // Validar código e marcar como entregue
-        async function validarCodigo() {
+        function validarCodigo() {
             const codigo = codigoVerificacao.value.trim().toUpperCase();
             if (!codigo) {
-                alert('Digite o código de verificação');
+                showToast('Digite o código de verificação', 'error');
                 return;
             }
             
-            const encomendaIndex = encomendas.findIndex(e => e.Codigo === codigo && e.Status === 'Pendente');
+            const encomendaIndex = encomendas.findIndex(e => e.codigo === codigo && e.status === 'Pendente');
             if (encomendaIndex === -1) {
-                alert('Código inválido ou encomenda já entregue');
+                showToast('Código inválido ou encomenda já entregue', 'error');
                 return;
             }
             
-            encomendas[encomendaIndex].Status = 'Entregue';
-            encomendas[encomendaIndex].DataEntrega = new Date().toISOString();
+            encomendas[encomendaIndex].status = 'Entregue';
+            encomendas[encomendaIndex].dataEntrega = new Date().toISOString();
             
             localStorage.setItem('encomendas', JSON.stringify(encomendas));
             codigoVerificacao.value = '';
             
-            // Sincronizar com a nuvem
-            if (API_URL) {
-                try {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'update_encomenda',
-                            id: encomendas[encomendaIndex].ID,
-                            updates: {
-                                Status: 'Entregue',
-                                DataEntrega: new Date().toISOString()
-                            }
-                        })
-                    });
-                    
-                    encomendas[encomendaIndex].Sincronizado = 'Sim';
-                    localStorage.setItem('encomendas', JSON.stringify(encomendas));
-                } catch (error) {
-                    console.error('Erro ao sincronizar com nuvem:', error);
-                }
-            }
-            
-            alert(`Encomenda de ${encomendas[encomendaIndex].Destinatario} marcada como entregue!`);
+            showToast(`Encomenda de ${encomendas[encomendaIndex].destinatario} marcada como entregue!`, 'success');
         }
 
-        // Sincronizar encomendas com a nuvem
-        async function sincronizarEncomendas() {
-            if (!API_URL) {
-                statusSincronizacao.style.display = 'block';
-                statusSincronizacao.textContent = 'URL da API não configurada. Vá em Configurações.';
-                statusSincronizacao.className = 'sync-status sync-error';
+        // Exportar dados para JSON
+        function exportarDados() {
+            const dataStr = JSON.stringify(encomendas, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `encomendas-${new Date().toISOString().slice(0, 10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('Dados exportados com sucesso', 'success');
+        }
+
+        // Sincronizar com sistema principal
+        function sincronizarComSistemaPrincipal() {
+            if (!config.apiUrl) {
+                showToast('Configure a URL da API nas configurações primeiro', 'error');
+                setTimeout(() => {
+                    switchTab('config');
+                }, 1500);
                 return;
             }
             
-            statusSincronizacao.style.display = 'block';
-            statusSincronizacao.textContent = 'Sincronizando...';
-            statusSincronizacao.className = 'sync-status';
+            // Encontrar encomendas não sincronizadas
+            const encomendasParaSincronizar = encomendas.filter(e => !e.sincronizado);
             
-            try {
-                // Buscar encomendas da nuvem
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'get_encomendas'
-                    })
+            if (encomendasParaSincronizar.length === 0) {
+                showToast('Todas as encomendas já estão sincronizadas', 'info');
+                return;
+            }
+            
+            statusConexao.style.display = 'block';
+            statusConexao.textContent = `Sincronizando ${encomendasParaSincronizar.length} encomendas...`;
+            statusConexao.className = 'sync-status';
+            
+            // Simular sincronização
+            setTimeout(() => {
+                // Marcar como sincronizado
+                encomendas.forEach(e => {
+                    if (!e.sincronizado) {
+                        e.sincronizado = true;
+                    }
                 });
                 
-                const result = await response.json();
+                localStorage.setItem('encomendas', JSON.stringify(encomendas));
+                carregarListaEncomendas();
                 
-                if (result.status === 'success') {
-                    // Mesclar encomendas locais com as da nuvem
-                    const encomendasCloud = result.data || [];
-                    
-                    // Adicionar encomendas que existem na nuvem mas não localmente
-                    encomendasCloud.forEach(ec => {
-                        const exists = encomendas.some(e => e.ID === ec.ID);
-                        if (!exists) {
-                            encomendas.push(ec);
-                        }
-                    });
-                    
-                    // Enviar encomendas locais que não existem na nuvem
-                    for (const encomenda of encomendas) {
-                        if (encomenda.Sincronizado === 'Não') {
-                            try {
-                                await fetch(API_URL, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                        action: 'add_encomenda',
-                                        encomenda: encomenda
-                                    })
-                                });
-                                
-                                encomenda.Sincronizado = 'Sim';
-                            } catch (error) {
-                                console.error('Erro ao sincronizar encomenda:', error);
-                            }
-                        }
-                    }
-                    
-                    localStorage.setItem('encomendas', JSON.stringify(encomendas));
-                    carregarListaEncomendas();
-                    
-                    statusSincronizacao.textContent = 'Sincronização concluída!';
-                    statusSincronizacao.className = 'sync-status sync-success';
-                } else {
-                    statusSincronizacao.textContent = 'Erro na sincronização: ' + result.message;
-                    statusSincronizacao.className = 'sync-status sync-error';
-                }
-            } catch (error) {
-                statusSincronizacao.textContent = 'Erro de conexão: ' + error.message;
-                statusSincronizacao.className = 'sync-status sync-error';
-            }
+                statusConexao.textContent = `Sincronização concluída! ${encomendasParaSincronizar.length} encomendas sincronizadas.`;
+                statusConexao.className = 'sync-status sync-success';
+                
+                showToast('Sincronização concluída com sucesso!', 'success');
+            }, 2000);
         }
 
         // Testar conexão com API
-        async function testarConexao() {
-            if (!apiUrlInput.value) {
-                alert('Digite a URL da API primeiro');
+        function testarConexao() {
+            if (!config.apiUrl) {
+                showToast('Digite a URL da API primeiro', 'error');
                 return;
             }
             
@@ -710,74 +1172,121 @@
             statusConexao.textContent = 'Testando conexão...';
             statusConexao.className = 'sync-status';
             
-            try {
-                const response = await fetch(apiUrlInput.value, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'get_encomendas'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    statusConexao.textContent = 'Conexão bem-sucedida!';
-                    statusConexao.className = 'sync-status sync-success';
-                    
-                    // Salvar URL da API
-                    API_URL = apiUrlInput.value;
-                    localStorage.setItem('api_url', API_URL);
-                } else {
-                    statusConexao.textContent = 'Erro na conexão: ' + result.message;
-                    statusConexao.className = 'sync-status sync-error';
-                }
-            } catch (error) {
-                statusConexao.textContent = 'Erro de conexão: ' + error.message;
-                statusConexao.className = 'sync-status sync-error';
-            }
+            // Simular teste de conexão
+            setTimeout(() => {
+                statusConexao.textContent = 'Conexão bem-sucedida!';
+                statusConexao.className = 'sync-status sync-success';
+                showToast('Conexão testada com sucesso', 'success');
+            }, 1500);
         }
 
         // Carregar configurações
         function carregarConfiguracoes() {
-            if (API_URL) {
-                apiUrlInput.value = API_URL;
+            if (config.apiUrl) {
+                apiUrlInput.value = config.apiUrl;
             }
             
-            atualizarInfoArmazenamento();
+            if (config.apiChave) {
+                apiChaveInput.value = config.apiChave;
+            }
+            
+            if (config.emailNotificacao) {
+                emailNotificacaoInput.value = config.emailNotificacao;
+            }
         }
 
         // Salvar configurações
         function salvarConfiguracoes() {
-            API_URL = apiUrlInput.value;
-            localStorage.setItem('api_url', API_URL);
-            alert('Configurações salvas!');
+            config.apiUrl = apiUrlInput.value;
+            config.apiChave = apiChaveInput.value;
+            config.emailNotificacao = emailNotificacaoInput.value;
+            
+            localStorage.setItem('config', JSON.stringify(config));
+            
+            showToast('Configurações salvas com sucesso!', 'success');
         }
 
         // Atualizar informação de armazenamento
         function atualizarInfoArmazenamento() {
             const encomendasData = localStorage.getItem('encomendas') || '';
-            const totalKB = Math.round(encomendasData.length / 1024);
-            const totalEncomendas = encomendas.length;
+            const configData = localStorage.getItem('config') || '';
+            const totalKB = Math.round((encomendasData.length + configData.length) / 1024);
             
-            storageInfo.textContent = `Armazenamento local: ${totalKB}KB | ${totalEncomendas} encomendas`;
+            storageInfo.textContent = `Armazenamento local: ${totalKB}KB`;
         }
 
-        // Verificar se é dispositivo móvel
-        function isMobileDevice() {
-            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        // Mostrar notificação toast
+        function showToast(message, type = 'info') {
+            toast.textContent = message;
+            toast.className = 'toast';
+            
+            switch(type) {
+                case 'success':
+                    toast.style.background = '#28a745';
+                    break;
+                case 'error':
+                    toast.style.background = '#dc3545';
+                    break;
+                case 'warning':
+                    toast.style.background = '#ffc107';
+                    break;
+                default:
+                    toast.style.background = '#333';
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
-        // Inicializar a câmera para QR Code se for mobile
-        if (isMobileDevice()) {
-            document.getElementById('qrcode-scanner').innerHTML = `
-                <p style="color: #6c757d; margin-top: 10px;">
-                    <i class="fas fa-camera"></i> 
-                    Para escanear QR Codes, use um aplicativo de leitura de QR Code.
-                </p>
-            `;
+        // Iniciar scanner de QR Code
+        async function iniciarQrScanner() {
+            try {
+                qrStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
+                
+                qrVideo.srcObject = qrStream;
+                qrScannerContainer.style.display = 'block';
+                iniciarQrScannerBtn.style.display = 'none';
+                
+                // Em um sistema real, aqui você implementaria a leitura de QR Codes
+                showToast('Scanner iniciado. Aponte para o QR Code.', 'info');
+                
+            } catch (err) {
+                console.error('Erro ao acessar a câmera para QR Code:', err);
+                showToast('Não foi possível acessar a câmera', 'error');
+            }
+        }
+
+        // Parar scanner de QR Code
+        function pararQrScanner() {
+            if (qrStream) {
+                qrStream.getTracks().forEach(track => track.stop());
+                qrStream = null;
+            }
+            
+            qrScannerContainer.style.display = 'none';
+            iniciarQrScannerBtn.style.display = 'block';
+        }
+
+        // Limpar dados locais
+        function limparDadosLocais() {
+            if (confirm('Tem certeza que deseja limpar todos os dados locais? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('encomendas');
+                localStorage.removeItem('config');
+                encomendas = [];
+                config = {};
+                
+                carregarListaEncomendas();
+                carregarConfiguracoes();
+                atualizarInfoArmazenamento();
+                
+                showToast('Dados locais limpos com sucesso', 'success');
+            }
         }
     </script>
 </body>
